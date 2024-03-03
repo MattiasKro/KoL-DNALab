@@ -104,7 +104,7 @@ buffer handlePermBank(buffer page_text) {
                 }
             } 
         }
-        sort availabeEmbryos by value.m.name;
+        sort availabeEmbryos by to_lower_case(value.m.name);
         sort unfinishedEmbryos by value.progress;
 
         page_text = replaceSelector(page_text, __DNA_EGGSATRACTOR, makeMonsterPicker(availabeEmbryos, "mid"));
