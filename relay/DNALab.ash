@@ -8,8 +8,7 @@
  */
 string __DNA_EGGSATRACTOR = "Extract an egg containing the dna of";
 string __DONATE_EGG = "Donate the egg of";
-string __DONATE_BUTTON = "\"Donate\"";
-
+string __INSUFFICIENT_XP = "You'll need to have your mimic lay an egg or gain some experience (100 xp+) before I can help you.";
 record MonsterWrapper {
     monster m;
     boolean available;
@@ -107,13 +106,18 @@ buffer handlePermBank(buffer page_text) {
         // Can't extract an egg. Check to see if it's because of too low XP on the mimic.
         if (to_int(fam.experience) < 100) {
             int insertPos = index_of(to_string(page_text), "<form");
-            if (insertPos > 0) {
-                page_text.insert(insertPos, 
-                    "<div>"
+            string xpText = "<div><center>"
+            // <img src="/images/itemimages/mimicchest.gif" width="30" height="30" border="0">
+                    + "<img src=\"/images/itemimages/" + fam.image + "\" width=\"30\" height=\"30\" border=\"0\"></center><br>"
                     + fam.name + " needs <font color=\"red\"><b>" 
                     + to_string(100 - to_int(fam.experience)) 
-                    + "</b></font> more experience to be able to extract an egg.<br>&nbsp;<div>");
-            }
+                    + "</b></font> more experience to be able to extract an egg.<br>&nbsp;<div>";
+            if (insertPos > 0) {
+                page_text.insert(insertPos, xpText);
+            } 
+            else if (index_of(to_string(page_text), __INSUFFICIENT_XP) > 0) {
+                page_text.replace_string(__INSUFFICIENT_XP, xpText);
+            } 
         }
     }
 
@@ -143,10 +147,10 @@ buffer handlePermBank(buffer page_text) {
     }
 
     if (item_amount($item[mimic egg]) > 0) {
-        // After we have done all donates, but still have more eggs
+        // If we have eggs to fight, show them now.
 
         buffer eggOptions = visit_url("inv_use.php?which=3&whichitem=11542&pwd=" + my_hash());
-        // We just lift out the whole form and slap it into out page.
+        // We just lift out the whole form and slap it into our page.
         matcher match_name = create_matcher("(<form.*?</form>)", eggOptions);
         if ( match_name.find() ) {
             buffer eggForm = match_name.group(1);
@@ -164,3 +168,4 @@ buffer handlePermBank(buffer page_text) {
 
     return page_text;
 }
+
